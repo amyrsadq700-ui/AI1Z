@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>دوره آموزش هوش مصنوعی | تجربه منحصر‌به‌فرد White Cloud Glass</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vazirmatn Persian Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP & ScrollTrigger for Camera & 3D Motion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        cloud: {
+                            base: '#f8fafc',
+                            surface: '#ffffff',
+                            pearl: '#f1f5f9',
+                            ice: '#e0f2fe',
+                        },
+                        iceBlue: '#0284c7',
+                        softCyan: '#06b6d4',
+                        softLavender: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-family: 'Vazirmatn', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::selection {
+            background: rgba(56, 189, 248, 0.25);
+            color: #0369a1;
+        }
+
+        /* Fixed WebGL 3D Canvas */
+        #webgl-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Transparent Interaction Layer */
+        #canvas-interactive-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        /* White Cloud Glass Card Token */
+        .white-glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px rgba(148, 163, 184, 0.12),
+                        0 1px 3px rgba(0, 0, 0, 0.02),
+                        inset 0 1px 2px rgba(255, 255, 255, 1),
+                        inset 0 -1px 20px rgba(56, 189, 248, 0.04);
+            border-radius: 1.75rem;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, box-shadow, border-color;
+        }
+
+        .white-glass-card:hover {
+            background: rgba(255, 255, 255, 0.88);
+            border-color: rgba(56, 189, 248, 0.45);
+            box-shadow: 0 25px 50px rgba(56, 189, 248, 0.22),
+                        inset 0 1px 3px rgba(255, 255, 255, 1),
+                        inset 0 -1px 30px rgba(139, 92, 246, 0.08);
+            transform: translateY(-5px) scale(1.015);
+        }
+
+        /* Volumetric Light Text Gradients */
+        .text-volumetric-cloud {
+            background: linear-gradient(135deg, #0f172a 0%, #0369a1 50%, #0284c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+        }
+
+        .text-volumetric-lavender {
+            background: linear-gradient(135deg, #0f172a 10%, #6d28d9 50%, #0284c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(139, 92, 246, 0.15);
+        }
+
+        /* Primary White Glass CTA Button */
+        .btn-white-glass-primary {
+            position: relative;
+            background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #f0f9ff 100%);
+            border: 1px solid rgba(255, 255, 255, 1);
+            color: #0369a1;
+            box-shadow: 0 12px 30px rgba(56, 189, 248, 0.25),
+                        inset 0 1px 3px rgba(255, 255, 255, 1),
+                        inset 0 -2px 10px rgba(2, 132, 199, 0.1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            will-change: transform, box-shadow;
+        }
+
+        .btn-white-glass-primary::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 65%);
+            transform: scale(0);
+            transition: transform 0.4s ease-out;
+        }
+
+        .btn-white-glass-primary::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 65%);
+            transform: scale(0);
+            transition: transform 0.6s ease-out;
+        }
+
+        .btn-white-glass-primary:hover::before {
+            transform: scale(1);
+        }
+
+        .btn-white-glass-primary:hover {
+            box-shadow: 0 20px 45px rgba(2, 132, 199, 0.35),
+                        inset 0 1px 4px rgba(255, 255, 255, 1);
+            transform: translateY(-2px) scale(1.02);
+            color: #0284c7;
+        }
+
+        /* Custom Scrollbar for Light Environment */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        /* Glass Modal Overlay */
+        .glass-modal {
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(30px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .glass-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-cloud-base text-slate-800 antialiased selection:bg-sky-200 selection:text-sky-900">
+
+    <canvas id="webgl-canvas"></canvas>
+    <div id="canvas-interactive-layer"></div>
+
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 py-6 pointer-events-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="white-glass-card px-6 py-3.5 flex items-center justify-between border border-white/90 shadow-lg">
+                
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-400 p-0.5 shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+                        <div class="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid fa-cloud text-sky-500 text-sm animate-pulse"></i>
+                        </div>
+                    </div>
+                    <span class="font-black text-lg tracking-wider text-slate-900 hidden sm:inline-block">
+                        WHITE CLOUD GLASS <span class="text-xs text-sky-600 font-mono font-normal">AI 2026</span>
+                    </span>
+                </div>
+
+                <ul class="flex items-center space-x-2 sm:space-x-8 space-x-reverse text-xs sm:text-sm font-semibold text-slate-600">
+                    <li><a href="#hero" class="hover:text-sky-600 transition-colors py-1 px-2 block">خانه</a></li>
+                    <li><a href="#neural-intro" class="hover:text-sky-600 transition-colors py-1 px-2 block">مفهوم</a></li>
+                    <li><a href="#curriculum-nodes" class="hover:text-sky-600 transition-colors py-1 px-2 block">سرفصل‌ها</a></li>
+                    <li><a href="#ai-galaxy" class="hover:text-sky-600 transition-colors py-1 px-2 block">ابزارها</a></li>
+                    <li><a href="#skills-orbs" class="hover:text-sky-600 transition-colors py-1 px-2 block">مهارت‌ها</a></li>
+                    <li><a href="#project-exhibition" class="hover:text-sky-600 transition-colors py-1 px-2 block">پروژه‌ها</a></li>
+                </ul>
+
+                <div>
+                    <a href="https://app.nazareto.ir/s/8njirlcy" target="_blank" rel="noopener noreferrer" 
+                       class="btn-white-glass-primary font-black text-xs sm:text-sm px-6 py-2.5 rounded-xl flex items-center gap-2 group">
+                       <span>ثبت‌نام</span>
+                       <i class="fa-solid fa-arrow-left text-xs transition-transform duration-300 group-hover:-translate-x-1"></i>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="relative z-10 pointer-events-none">
+
+        <section id="hero" class="min-h-screen relative flex items-center justify-center px-4 pt-24 pb-16">
+            <div class="max-w-5xl mx-auto text-center pointer-events-auto">
+                
+                <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full white-glass-card text-sky-700 text-xs font-mono mb-8 border border-white shadow-sm">
+                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-ping"></span>
+                    دنیای ابری و شیشه‌ای آموزش هوش مصنوعی
+                </div>
+
+                <h1 id="hero-title" class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight sm:leading-none tracking-tight mb-8">
+                    <span class="block text-volumetric-cloud">هوش مصنوعی را یاد بگیر،</span>
+                    <span class="block mt-3 text-volumetric-lavender">آینده را بساز.</span>
+                </h1>
+
+                <p id="hero-sub" class="text-base sm:text-xl md:text-2xl text-slate-600 font-normal max-w-3xl mx-auto leading-relaxed mb-12">
+                    از صفر تا استفاده حرفه‌ای از ابزارهای هوش مصنوعی و ساخت پروژه‌های واقعی.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-5 max-w-md mx-auto">
+                    <a href="https://app.nazareto.ir/s/8njirlcy" target="_blank" rel="noopener noreferrer" 
+                       class="btn-white-glass-primary w-full sm:w-auto text-sky-900 text-lg font-black px-10 py-4 rounded-2xl flex items-center justify-center gap-3 group">
+                        <span>ثبت‌نام در دوره</span>
+                        <i class="fa-solid fa-sparkles text-sky-500 text-sm group-hover:rotate-45 transition-transform"></i>
+                    </a>
+
+                    <a href="#neural-intro" 
+                       class="white-glass-card w-full sm:w-auto text-slate-700 hover:text-slate-900 text-lg font-medium px-8 py-4 rounded-2xl flex items-center justify-center gap-3 hover:border-sky-300">
+                        <span>کشف دوره</span>
+                        <i class="fa-solid fa-chevron-down text-xs text-sky-500 animate-bounce"></i>
+                    </a>
+                </div>
+
+                <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
+                    <div class="p-5 white-glass-card text-center">
+                        <div class="text-2xl sm:text-3xl font-black text-sky-600">۱۰۰٪</div>
+                        <div class="text-xs text-slate-500 mt-1 font-medium">پروژه‌محور و کاربردی</div>
+                    </div>
+                    <div class="p-5 white-glass-card text-center">
+                        <div class="text-2xl sm:text-3xl font-black text-indigo-600">+۲۰</div>
+                        <div class="text-xs text-slate-500 mt-1 font-medium">ابزار قدرتمند AI</div>
+                    </div>
+                    <div class="p-5 white-glass-card text-center">
+                        <div class="text-2xl sm:text-3xl font-black text-teal-600">۹</div>
+                        <div class="text-xs text-slate-500 mt-1 font-medium">فصل آموزشی کلیدی</div>
+                    </div>
+                    <div class="p-5 white-glass-card text-center">
+                        <div class="text-2xl sm:text-3xl font-black text-sky-500">۲۰۲۶</div>
+                        <div class="text-xs text-slate-500 mt-1 font-medium">آپدیت روز تکنولوژی</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="neural-intro" class="min-h-screen relative flex items-center py-28 px-4">
+            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                
+                <div class="pointer-events-auto space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full white-glass-card border-sky-200 text-sky-700 text-xs font-bold">
+                        <i class="fa-solid fa-brain"></i>
+                        طرز تفکر ابری جدید
+                    </div>
+
+                    <h2 class="text-3xl sm:text-5xl font-extrabold text-slate-900 leading-tight">
+                        هوش مصنوعی فقط یک ابزار نیست؛<br>
+                        <span class="text-volumetric-cloud">یک مهارت جدید برای ساختن آینده است.</span>
+                    </h2>
+
+                    <p class="text-slate-600 text-base sm:text-lg leading-relaxed font-normal">
+                        تسلط بر هوش مصنوعی در محیطی شفاف و آینده‌نگر به شما اجازه می‌دهد ۱۰ برابر سریع‌تر ایده بپردازید، خلق کنید و مسائل پیچیده را حل نمایید.
+                    </p>
+
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        با حرکت در صفحه، شبکه عصبی شفاف و یخی داخل ابر شیشه‌ای گستردگی پیدا می‌کند.
+                    </p>
+
+                    <div class="pt-4">
+                        <a href="https://app.nazareto.ir/s/8njirlcy" target="_blank" rel="noopener noreferrer" 
+                           class="btn-white-glass-primary inline-flex text-sky-900 font-black px-7 py-3.5 rounded-xl text-sm items-center gap-3">
+                            <span>ورود به این فضای زنده</span>
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="hidden lg:block h-[450px]"></div>
+
+            </div>
+        </section>
+
+        <section id="curriculum-nodes" class="min-h-screen relative py-32 px-4">
+            <div class="max-w-7xl mx-auto">
+                
+                <div class="text-center max-w-3xl mx-auto mb-16 pointer-events-auto">
+                    <span class="text-sky-600 font-mono text-xs tracking-widest uppercase block mb-3">White Glass Curriculum</span>
+                    <h2 class="text-3xl sm:text-5xl font-black text-slate-900">سرفصل‌های دوره (Cloud Nodes)</h2>
+                    <p class="text-slate-500 text-sm sm:text-base mt-4">روی هر ابر شیشه‌ای کلیک کنید تا جزییات کامل آن باز شود.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pointer-events-auto">
+                    
+                    <!-- Node 1 -->
+                    <div onclick="openNodeModal(0)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-sky-200 group-hover:text-sky-500 transition-colors">01</span>
+                            <div class="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-atom text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">آشنایی با هوش مصنوعی</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">مفاهیم بنیادی، مدل‌های بزرگ زبانی (LLM) و معماری ترنسفورمرها.</p>
+                        <div class="mt-6 flex items-center text-xs text-sky-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 2 -->
+                    <div onclick="openNodeModal(1)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-indigo-200 group-hover:text-indigo-500 transition-colors">02</span>
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-terminal text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">مهندسی پرامپت</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">تکنیک‌های حرفه‌ای دستورنویسی، Chain-of-Thought و کنترل دقیق خروجی.</p>
+                        <div class="mt-6 flex items-center text-xs text-indigo-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 3 -->
+                    <div onclick="openNodeModal(2)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-sky-200 group-hover:text-sky-500 transition-colors">03</span>
+                            <div class="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-image text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">تولید تصویر با AI</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">تسلط کامل بر Midjourney v6، Stable Diffusion XL و Flux.1.</p>
+                        <div class="mt-6 flex items-center text-xs text-sky-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 4 -->
+                    <div onclick="openNodeModal(3)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-purple-200 group-hover:text-purple-500 transition-colors">04</span>
+                            <div class="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-video text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-purple-600 transition-colors">تولید ویدیو با AI</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">ساخت ویدیوهای سینمایی با Runway Gen-3، Luma Dream Machine و Sora.</p>
+                        <div class="mt-6 flex items-center text-xs text-purple-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 5 -->
+                    <div onclick="openNodeModal(4)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-sky-200 group-hover:text-sky-500 transition-colors">05</span>
+                            <div class="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-pen-nib text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">تولید محتوا با AI</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">تولید سناریو، مقالات سئو شده، کپی‌رایتینگ و محتوای شبکه‌های اجتماعی.</p>
+                        <div class="mt-6 flex items-center text-xs text-sky-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 6 -->
+                    <div onclick="openNodeModal(5)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-teal-200 group-hover:text-teal-500 transition-colors">06</span>
+                            <div class="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-palette text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-teal-600 transition-colors">طراحی با AI</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">طراحی هویت بصری، UI/UX و بنرهای تبلیغاتی با ترکیب هوش مصنوعی و فیگما.</p>
+                        <div class="mt-6 flex items-center text-xs text-teal-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 7 -->
+                    <div onclick="openNodeModal(6)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-sky-200 group-hover:text-sky-500 transition-colors">07</span>
+                            <div class="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-code text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">برنامه‌نویسی با AI</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">توسعه هوشمند وب‌سایت و اپلیکیشن با Cursor، Copilot و ChatGPT.</p>
+                        <div class="mt-6 flex items-center text-xs text-sky-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 8 -->
+                    <div onclick="openNodeModal(7)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-indigo-200 group-hover:text-indigo-500 transition-colors">08</span>
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-gears text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">اتوماسیون با AI</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">خودکارسازی فرآیندهای کاری با Make و ساخت AI Agentها.</p>
+                        <div class="mt-6 flex items-center text-xs text-indigo-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                    <!-- Node 9 -->
+                    <div onclick="openNodeModal(8)" class="white-glass-card p-8 cursor-pointer group hover:-translate-y-2 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-4xl font-black font-mono text-emerald-200 group-hover:text-emerald-500 transition-colors">09</span>
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-rocket text-xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors">ساخت پروژه‌های واقعی</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">تکمیل و تحویل ۳ پروژه سنگین تجاری جهت ارائه مستقیم به بازار کار.</p>
+                        <div class="mt-6 flex items-center text-xs text-emerald-600 font-bold gap-2">
+                            <span>مشاهده سرفصل</span>
+                            <i class="fa-solid fa-arrow-left text-[10px] group-hover:-translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <section id="ai-galaxy" class="min-h-screen relative py-32 px-4 flex items-center">
+            <div class="max-w-7xl mx-auto w-full">
+                
+                <div class="text-center max-w-2xl mx-auto mb-16 pointer-events-auto">
+                    <span class="text-sky-600 font-mono text-xs tracking-widest uppercase block mb-3">Cloud Galaxy Tools</span>
+                    <h2 class="text-3xl sm:text-5xl font-black text-slate-900">کهکشان ابزارهای هوش مصنوعی</h2>
+                    <p class="text-slate-500 text-sm mt-3">در این دوره به برترین ابزارهای سال ۲۰۲۶ تسلط کامل پیدا می‌کنید.</p>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 pointer-events-auto">
+                    
+                    <div class="white-glass-card p-6 text-center group hover:border-sky-400">
+                        <i class="fa-solid fa-comments text-3xl text-sky-500 mb-3 group-hover:scale-125 transition-transform block"></i>
+                        <div class="text-slate-900 font-bold text-sm">ChatGPT-5</div>
+                        <div class="text-[11px] text-slate-500 mt-1">OpenAI</div>
+                    </div>
+
+                    <div class="white-glass-card p-6 text-center group hover:border-indigo-400">
+                        <i class="fa-solid fa-wand-magic-sparkles text-3xl text-indigo-500 mb-3 group-hover:scale-125 transition-transform block"></i>
+                        <div class="text-slate-900 font-bold text-sm">Midjourney v6</div>
+                        <div class="text-[11px] text-slate-500 mt-1">Visual AI</div>
+                    </div>
+
+                    <div class="white-glass-card p-6 text-center group hover:border-teal-400">
+                        <i class="fa-solid fa-brain text-3xl text-teal-500 mb-3 group-hover:scale-125 transition-transform block"></i>
+                        <div class="text-slate-900 font-bold text-sm">Claude 3.5</div>
+                        <div class="text-[11px] text-slate-500 mt-1">Anthropic</div>
+                    </div>
+
+                    <div class="white-glass-card p-6 text-center group hover:border-emerald-400">
+                        <i class="fa-solid fa-film text-3xl text-emerald-500 mb-3 group-hover:scale-125 transition-transform block"></i>
+                        <div class="text-slate-900 font-bold text-sm">Runway Gen-3</div>
+                        <div class="text-[11px] text-slate-500 mt-1">Video Gen</div>
+                    </div>
+
+                    <div class="white-glass-card p-6 text-center group hover:border-sky-400">
+                        <i class="fa-solid fa-code text-3xl text-sky-500 mb-3 group-hover:scale-125 transition-transform block"></i>
+                        <div class="text-slate-900 font-bold text-sm">Cursor AI</div>
+                        <div class="text-[11px] text-slate-500 mt-1">IDE Assistant</div>
+                    </div>
+
+                    <div class="white-glass-card p-6 text-center group hover:border-purple-400">
+                        <i class="fa-solid fa-microphone text-3xl text-purple-500 mb-3 group-hover:scale-125 transition-transform block"></i>
+                        <div class="text-slate-900 font-bold text-sm">ElevenLabs</div>
+                        <div class="text-[11px] text-slate-500 mt-1">Voice AI</div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <section id="skills-orbs" class="min-h-screen relative py-32 px-4">
+            <div class="max-w-7xl mx-auto">
+                
+                <div class="text-center max-w-3xl mx-auto mb-16 pointer-events-auto">
+                    <span class="text-sky-600 font-mono text-xs tracking-widest uppercase block mb-3">Skill Capabilities</span>
+                    <h2 class="text-3xl sm:text-5xl font-black text-slate-900">دستاوردهای مهارت‌آموزی (Skill Orbs)</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pointer-events-auto">
+                    
+                    <div class="white-glass-card p-6 flex items-start gap-4 hover:border-sky-400">
+                        <div class="w-10 h-10 rounded-full bg-sky-100 border border-sky-300 text-sky-600 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+                            <i class="fa-solid fa-check text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-slate-900 font-bold text-base mb-1">پرامپت‌نویسی پیشرفته</h4>
+                            <p class="text-slate-500 text-xs">دریافت خروجی‌های دقیق و بدون خطا از انواع مدل‌های هوش مصنوعی.</p>
+                        </div>
+                    </div>
+
+                    <div class="white-glass-card p-6 flex items-start gap-4 hover:border-indigo-400">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-300 text-indigo-600 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+                            <i class="fa-solid fa-check text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-slate-900 font-bold text-base mb-1">خلق تصاویر فتورئال</h4>
+                            <p class="text-slate-500 text-xs">تولید گرافیک‌ها و تصاویر سینمایی با بالاترین کیفیت تجاری.</p>
+                        </div>
+                    </div>
+
+                    <div class="white-glass-card p-6 flex items-start gap-4 hover:border-purple-400">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 border border-purple-300 text-purple-600 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+                            <i class="fa-solid fa-check text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-slate-900 font-bold text-base mb-1">تولید تیزر و انیمیشن</h4>
+                            <p class="text-slate-500 text-xs">ساخت ویدیوهای تبلیغاتی جذاب با جدیدترین ابزارهای AI.</p>
+                        </div>
+                    </div>
+
+                    <div class="white-glass-card p-6 flex items-start gap-4 hover:border-emerald-400">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+                            <i class="fa-solid fa-check text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-slate-900 font-bold text-base mb-1">کدنویسی و توسعه سریع</h4>
+                            <p class="text-slate-500 text-xs">ساخت اپلیکیشن‌ها و ربات‌ها بدون سابقه کدنویسی سنگین.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <section id="project-exhibition" class="min-h-screen relative py-32 px-4 flex items-center">
+            <div class="max-w-7xl mx-auto w-full">
+                
+                <div class="text-center max-w-3xl mx-auto mb-16 pointer-events-auto">
+                    <span class="text-sky-600 font-mono text-xs tracking-widest uppercase block mb-3">White Exhibition</span>
+                    <h2 class="text-3xl sm:text-5xl font-black text-slate-900">نمایشگاه سه‌بعدی پروژه‌ها</h2>
+                    <p class="text-slate-500 text-sm mt-3">نمونه خروجی‌هایی که در پایان دوره قادر به خلق آن‌ها خواهید بود.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pointer-events-auto">
+                    
+                    <div class="white-glass-card p-8 group relative overflow-hidden">
+                        <div class="h-44 rounded-2xl bg-gradient-to-br from-sky-100 to-white p-6 flex flex-col justify-between mb-6 border border-sky-200">
+                            <span class="text-xs font-mono text-sky-700 bg-white/80 px-3 py-1 rounded-full w-max border border-sky-200">PROJECT_01 // MEDIA</span>
+                            <i class="fa-solid fa-wand-magic-sparkles text-5xl text-sky-300 group-hover:scale-125 transition-transform self-end"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">کمپین تبلیغاتی برند تجاری</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">ساخت کامل هویت بصری، تصاویر تبلیغاتی، کپی‌رایتینگ و تیزر ویدیو برای برند بین‌المللی.</p>
+                    </div>
+
+                    <div class="white-glass-card p-8 group relative overflow-hidden">
+                        <div class="h-44 rounded-2xl bg-gradient-to-br from-indigo-100 to-white p-6 flex flex-col justify-between mb-6 border border-indigo-200">
+                            <span class="text-xs font-mono text-indigo-700 bg-white/80 px-3 py-1 rounded-full w-max border border-indigo-200">PROJECT_02 // CODE</span>
+                            <i class="fa-solid fa-laptop-code text-5xl text-indigo-300 group-hover:scale-125 transition-transform self-end"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">وب‌اپلیکیشن هوشمند با Cursor</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">توسعه سرویس کاربردی تحت وب با طراحی مدرن و اتصال مستقیم به API‌های هوش مصنوعی.</p>
+                    </div>
+
+                    <div class="white-glass-card p-8 group relative overflow-hidden">
+                        <div class="h-44 rounded-2xl bg-gradient-to-br from-emerald-100 to-white p-6 flex flex-col justify-between mb-6 border border-emerald-200">
+                            <span class="text-xs font-mono text-emerald-700 bg-white/80 px-3 py-1 rounded-full w-max border border-emerald-200">PROJECT_03 // AGENTS</span>
+                            <i class="fa-solid fa-robot text-5xl text-emerald-300 group-hover:scale-125 transition-transform self-end"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">اتوماسیون کامل محتوا</h3>
+                        <p class="text-slate-500 text-xs leading-relaxed">طراحی شبکه اتوماتیک دریافت خبر، بازنویسی هوشمند و انتشار خودکار در شبکه‌های اجتماعی.</p>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <section id="cta" class="min-h-screen relative py-32 px-4 flex items-center justify-center">
+            <div class="max-w-4xl mx-auto w-full text-center pointer-events-auto">
+                
+                <div class="white-glass-card p-10 sm:p-16 border-2 border-sky-300 relative overflow-hidden shadow-[0_20px_60px_rgba(56,189,248,0.25)]">
+                    
+                    <span class="text-sky-600 font-mono text-xs sm:text-sm tracking-widest uppercase block mb-4">White Cloud Registration 2026</span>
+
+                    <h2 class="text-3xl sm:text-5xl md:text-6xl font-black text-slate-900 leading-tight mb-6">
+                        آماده‌ای آینده را بسازی؟
+                    </h2>
+
+                    <p class="text-slate-600 text-base sm:text-xl font-normal max-w-2xl mx-auto leading-relaxed mb-10">
+                        یادگیری هوش مصنوعی را از همین امروز شروع کن و از تغییرات بزرگ تکنولوژی به عنوان فرصتی بی‌نظیر استفاده کن.
+                    </p>
+
+                    <div class="flex justify-center">
+                        <a href="https://app.nazareto.ir/s/8njirlcy" target="_blank" rel="noopener noreferrer" 
+                           class="btn-white-glass-primary text-sky-900 text-xl font-black px-12 py-5 rounded-2xl flex items-center gap-4 group shadow-xl">
+                            <span>همین حالا ثبت‌نام کن</span>
+                            <i class="fa-solid fa-arrow-left group-hover:-translate-x-2 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <div class="mt-10 flex items-center justify-center gap-6 text-xs text-slate-500 flex-wrap font-medium">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-emerald-500"></i> تضمین کیفیت و به‌روزرسانی مداوم</span>
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-500"></i> دسترسی آنی پس از ثبت‌نام</span>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <footer class="py-12 border-t border-white/80 bg-white/40 backdrop-blur-md relative z-10 pointer-events-auto">
+            <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-medium">
+                <p>© ۲۰۲۶ تمامی حقوق محفوظ است — تجربه ویژه White Cloud Glass برای آموزش هوش مصنوعی.</p>
+            </div>
+        </footer>
+
+    </main>
+
+    <div id="node-modal" class="glass-modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="white-glass-card max-w-2xl w-full p-8 relative border border-sky-300 shadow-2xl">
+            <button onclick="closeNodeModal()" class="absolute top-6 left-6 text-slate-400 hover:text-slate-800 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div id="modal-content" class="space-y-4">
+                <!-- Dynamically Populated -->
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-200 flex justify-end">
+                <a href="https://app.nazareto.ir/s/8njirlcy" target="_blank" rel="noopener noreferrer" 
+                   class="btn-white-glass-primary text-sky-900 text-sm font-black px-6 py-3 rounded-xl flex items-center gap-2">
+                    <span>ثبت‌نام مستقیم</span>
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const curriculumData = [
+            { title: '۰۱. آشنایی با هوش مصنوعی', desc: 'در این فصل به درک مفاهیم بنیادی هوش مصنوعی، مدل‌های بزرگ زبانی (LLM)، معماری ترنسفورمرها و نحوه اثرگذاری AI بر آینده مشاغل می‌پردازیم.' },
+            { title: '۰۲. مهندسی پرامپت (Prompt Engineering)', desc: 'یادگیری اصول دستورنویسی پیشرفته، تکنیک‌های Few-Shot، Chain-of-Thought و جلوگیری از خطای مدل‌ها جهت گرفتن دقیق‌ترین خروجی ممکن.' },
+            { title: '۰۳. تولید تصویر با AI', desc: 'تسلط کامل بر Midjourney v6، Stable Diffusion XL و Flux.1 برای خلق گرافیک‌های فتورئالیستیک و بنرهای فوق‌العاده.' },
+            { title: '۰۴. تولید ویدیو با AI', desc: 'خلق تیزرهای سینمایی و انیمیشن از متون و تصاویر با استفاده از Runway Gen-3، Luma Dream Machine و Sora.' },
+            { title: '۰۵. تولید محتوا با AI', desc: 'روش‌های نوشتن مقاله سئو شده، پست‌های شبکه اجتماعی، متون تبلیغاتی و ایده‌پردازی با سرعت ۱۰ برابری.' },
+            { title: '۰۶. طراحی با AI', desc: 'طراحی هویت بصری، UI/UX، لوگو و بنرهای تبلیغاتی با ترکیب ابزارهای هوش مصنوعی و Figma.' },
+            { title: '۰۷. برنامه‌نویسی با AI', desc: 'توسعه وب‌سایت، اپلیکیشن و دیباگ سریع کدها به کمک دستیارهای Cursor AI، GitHub Copilot و ChatGPT.' },
+            { title: '۰۸. اتوماسیون فرآیندها', desc: 'خودکارسازی کارهای تکراری روزمره، ساخت سیستم‌های هوشمند با Make و Zapier و برنامه‌ریزی AI Agentها.' },
+            { title: '۰۹. ساخت پروژه‌های واقعی', desc: 'پیاده‌سازی نهایی ۳ پروژه جامع رزومه‌ساز شامل کمپین تبلیغاتی، وب‌اپلیکیشن کاربردی و سیستم اتوماسیون محتوا.' }
+        ];
+
+        function openNodeModal(index) {
+            const data = curriculumData[index];
+            const modal = document.getElementById('node-modal');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+                <div class="text-sky-600 text-xs font-mono">MODULE ${index + 1}</div>
+                <h3 class="text-2xl font-black text-slate-900">${data.title}</h3>
+                <p class="text-slate-600 text-sm leading-relaxed font-normal">${data.desc}</p>
+            `;
+            modal.classList.add('active');
+        }
+
+        function closeNodeModal() {
+            document.getElementById('node-modal').classList.remove('active');
+        }
+
+        let scene, camera, renderer;
+        let cloudsGroup, neuralGroup, particlesMesh;
+        let mouseX = 0, mouseY = 0;
+        let targetMouseX = 0, targetMouseY = 0;
+
+        function init3D() {
+            const canvas = document.getElementById('webgl-canvas');
+            
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0xf8fafc, 0.03);
+
+            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 0, 12);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setClearColor(0xf8fafc, 1);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 2.8);
+            scene.add(ambientLight);
+
+            const skyLight = new THREE.PointLight(0x38bdf8, 2.5, 25);
+            skyLight.position.set(6, 6, 6);
+            scene.add(skyLight);
+
+            const violetLight = new THREE.PointLight(0xa855f7, 2, 25);
+            violetLight.position.set(-6, -6, -4);
+            scene.add(violetLight);
+
+            cloudsGroup = new THREE.Group();
+
+            const glassMaterial = new THREE.MeshPhysicalMaterial({
+                color: 0xffffff,
+                emissive: 0xf0f7ff,
+                roughness: 0.1,
+                metalness: 0.05,
+                transmission: 0.92,
+                thickness: 1.5,
+                ior: 1.35,
+                transparent: true,
+                opacity: 0.88,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                reflectivity: 0.9
+            });
+
+            for (let i = 0; i < 5; i++) {
+                const geometry = new THREE.IcosahedronGeometry(2 + Math.random() * 1.5, 3);
+                
+                const pos = geometry.attributes.position;
+                for (let j = 0; j < pos.count; j++) {
+                    const vx = pos.getX(j);
+                    const vy = pos.getY(j);
+                    const vz = pos.getZ(j);
+                    const noise = Math.sin(vx * 2) * Math.cos(vy * 2) * Math.sin(vz * 2) * 0.35;
+                    pos.setXYZ(j, vx + noise, vy + noise, vz + noise);
+                }
+                geometry.computeVertexNormals();
+
+                const cloudMesh = new THREE.Mesh(geometry, glassMaterial);
+                cloudMesh.position.set(
+                    (Math.random() - 0.5) * 10,
+                    (Math.random() - 0.5) * 8,
+                    (Math.random() - 0.5) * 10 - 2
+                );
+                cloudMesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                cloudsGroup.add(cloudMesh);
+            }
+            scene.add(cloudsGroup);
+
+            neuralGroup = new THREE.Group();
+            const nodeCount = 28;
+            const nodeGeo = new THREE.SphereGeometry(0.08, 16, 16);
+            const nodeMat = new THREE.MeshBasicMaterial({ color: 0x0284c7 });
+            const nodePositions = [];
+
+            for (let i = 0; i < nodeCount; i++) {
+                const mesh = new THREE.Mesh(nodeGeo, nodeMat);
+                const pos = new THREE.Vector3(
+                    (Math.random() - 0.5) * 3,
+                    (Math.random() - 0.5) * 3,
+                    (Math.random() - 0.5) * 3
+                );
+                mesh.position.copy(pos);
+                neuralGroup.add(mesh);
+                nodePositions.push(pos);
+            }
+
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 });
+            for (let i = 0; i < nodePositions.length; i++) {
+                for (let j = i + 1; j < nodePositions.length; j++) {
+                    if (nodePositions[i].distanceTo(nodePositions[j]) < 1.6) {
+                        const lineGeo = new THREE.BufferGeometry().setFromPoints([nodePositions[i], nodePositions[j]]);
+                        const line = new THREE.Line(lineGeo, lineMat);
+                        neuralGroup.add(line);
+                    }
+                }
+            }
+            scene.add(neuralGroup);
+
+            const particlesCount = window.innerWidth < 768 ? 250 : 600;
+            const pGeo = new THREE.BufferGeometry();
+            const pPos = new Float32Array(particlesCount * 3);
+
+            for (let i = 0; i < particlesCount * 3; i++) {
+                pPos[i] = (Math.random() - 0.5) * 25;
+            }
+
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            const pMat = new THREE.PointsMaterial({
+                size: 0.05,
+                color: 0x38bdf8,
+                transparent: true,
+                opacity: 0.5
+            });
+
+            particlesMesh = new THREE.Points(pGeo, pMat);
+            scene.add(particlesMesh);
+
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousemove', onMouseMove);
+
+            initScrollAnimations();
+            animate();
+        }
+
+        function onMouseMove(e) {
+            targetMouseX = (e.clientX - window.innerWidth / 2) * 0.0009;
+            targetMouseY = (e.clientY - window.innerHeight / 2) * 0.0009;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function initScrollAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Faster, snappier scroll-driven camera motion
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: "main",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 0.5
+                }
+            });
+
+            tl.to(camera.position, { z: 8, y: -2 }, 0)
+              .to(cloudsGroup.rotation, { y: Math.PI * 1.5, x: 0.5 }, 0)
+              .to(neuralGroup.position, { z: 3, y: -4 }, 0.2)
+              .to(neuralGroup.scale, { x: 1.8, y: 1.8, z: 1.8 }, 0.2)
+              .to(camera.position, { z: 6, y: -8 }, 0.5)
+              .to(cloudsGroup.position, { y: -10 }, 0.7);
+
+            // Smooth staggered scroll reveals for cards
+            gsap.utils.toArray('.white-glass-card').forEach((card) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 88%",
+                        toggleActions: "play none none reverse"
+                    },
+                    y: 25,
+                    opacity: 0,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Snappier lerp factor (0.12 instead of 0.05) for rapid smooth mouse response
+            mouseX += (targetMouseX - mouseX) * 0.12;
+            mouseY += (targetMouseY - mouseY) * 0.12;
+
+            scene.rotation.y = mouseX;
+            scene.rotation.x = mouseY;
+
+            cloudsGroup.children.forEach((cloud, idx) => {
+                cloud.rotation.y += 0.004 * (idx % 2 === 0 ? 1 : -1);
+                cloud.rotation.x += 0.002;
+            });
+
+            neuralGroup.rotation.y += 0.005;
+            particlesMesh.rotation.y -= 0.001;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('load', () => {
+            init3D();
+        });
+    </script>
+</body>
+</html>
